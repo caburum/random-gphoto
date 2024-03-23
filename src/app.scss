@@ -1,0 +1,59 @@
+:root {
+	font-family: 'Figtree', sans-serif;
+	line-height: 1.5;
+	font-weight: 400;
+
+	color-scheme: dark;
+
+	color: #eee;
+	background-color: #000;
+
+	--bg: #000;
+	--card: #111;
+	--card-active: #2962ff;
+	--button: #1a1a1a;
+
+	--gap: 0.25em;
+}
+
+html {
+	margin: 0;
+	display: flex;
+	min-width: 320px;
+	min-height: 100vh;
+}
+
+body {
+	margin: 0 auto;
+	padding: min(2%, 1em);
+	text-align: center;
+	width: 100%;
+}
+
+#app {
+	display: grid;
+	gap: var(--gap);
+}
+
+.horizPanel {
+	display: flex;
+	gap: var(--gap);
+	flex-wrap: wrap;
+	justify-content: center;
+}
+
+button {
+	border-radius: var(--gap); // 8px;
+	border: none;
+	padding: 0.5em 1.1em;
+	font-size: 1em;
+	font-weight: 500;
+	font-family: inherit;
+	background-color: var(--button);
+	cursor: pointer;
+}
+button:disabled {
+	filter: contrast(0.9);
+	opacity: 0.8;
+	cursor: not-allowed;
+}

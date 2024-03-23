@@ -1,0 +1,36 @@
+{
+	"name": "random-gphoto",
+	"private": true,
+	"version": "1.0.0",
+	"author": "Calum Dingwall (https://github.com/caburum)",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"preview": "vite preview",
+		"check": "svelte-check --tsconfig ./tsconfig.json",
+		"lint": "prettier --check . && eslint .",
+		"format": "prettier --write ."
+	},
+	"devDependencies": {
+		"@sveltejs/vite-plugin-svelte": "^3.0.2",
+		"@tsconfig/svelte": "^5.0.2",
+		"@types/eslint": "^8.56.6",
+		"@typescript-eslint/eslint-plugin": "^7.3.1",
+		"@typescript-eslint/parser": "^7.3.1",
+		"eslint": "^8.57.0",
+		"eslint-config-prettier": "^9.1.0",
+		"eslint-plugin-svelte": "^2.35.1",
+		"prettier": "^3.2.5",
+		"prettier-plugin-svelte": "^3.2.2",
+		"sass": "^1.72.0",
+		"svelte": "^4.2.12",
+		"svelte-check": "^3.6.7",
+		"tslib": "^2.6.2",
+		"typescript": "^5.2.2",
+		"vite": "^5.2.0"
+	},
+	"dependencies": {
+		"google-oauth-gsi": "^4.0.1"
+	}
+}
