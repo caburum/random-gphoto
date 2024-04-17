@@ -10,10 +10,18 @@
 
 	--bg: #000;
 	--card: #111;
-	--card-active: #2962ff;
 	--button: #1a1a1a;
 
-	--gap: 0.25em;
+	--blue: #2962ff;
+	--blue-text: white;
+	--red: #B71C1C;
+	--red-text: white;
+	--yellow: #fc0;
+	--yellow-text: black;
+	--green: #09AF00;
+	--green-text: #111;
+
+	--gap: 0.5em;
 }
 
 html {
@@ -21,6 +29,7 @@ html {
 	display: flex;
 	min-width: 320px;
 	min-height: 100vh;
+	word-break: break-all; // prevent weird overflow for long things
 }
 
 body {
@@ -28,6 +37,10 @@ body {
 	padding: min(2%, 1em);
 	text-align: center;
 	width: 100%;
+}
+
+h1, h2, h3, p {
+	margin: 0;
 }
 
 #app {
@@ -56,4 +69,20 @@ button:disabled {
 	filter: contrast(0.9);
 	opacity: 0.8;
 	cursor: not-allowed;
+}
+button:hover {
+	filter: brightness(1.1) contrast(0.95);
+}
+
+button.active {
+	background-color: var(--blue);
+	color: var(--blue-text);
+}
+button.warning {
+	background-color: var(--yellow);
+	color: var(--yellow-text);
+}
+button.danger {
+	background-color: var(--red);
+	color: var(--red-text);
 }
