@@ -99,8 +99,8 @@ export const login = googleProvider.useGoogleLogin({
 	authState.set({ state: 'none' });
 })();
 
-export const logout = () => {
-	googleLogout();
+export const logout = (full = true) => {
+	if (full) googleLogout();
 	localStorage.removeItem('token'); // forget token (though it will still be valid until it expires)
 	// can't seem to find a way to revoke the token without messing up scopes for next login
 	authState.set({ state: 'none' });

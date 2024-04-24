@@ -1,11 +1,11 @@
-import { authState, type AuthState } from './auth';
-import { db, type DbMediaItem } from './db';
-import { get } from 'svelte/store';
+import { type BulkError } from 'dexie';
+import { logout, type AuthState } from './auth';
+import { DbMediaItemSeen, db, type DbMediaItem } from './db';
 
 export interface GoogleMediaItem {
 	id: string;
 	description?: string;
-	productUrl: string; // link to photo in app, todo: on use set ?authuser=
+	productUrl: string; // link to photo in app
 	baseUrl?: string; // direct file, only valid for 60 minutes from api call
 	mimeType: string;
 	filename: string;
@@ -19,15 +19,15 @@ export interface GoogleMediaMetadata {
 	photo?: {
 		cameraMake: string;
 		cameraModel: string;
-		focalLength: string;
-		apertureFNumber: string;
-		isoEquivalent: string;
+		focalLength: number;
+		apertureFNumber: number;
+		isoEquivalent: number;
 		exposureTime: string;
 	};
 	video?: {
 		cameraMake: string;
 		cameraModel: string;
-		fps: string;
+		fps: number;
 		status: string;
 	};
 }
@@ -43,31 +43,44 @@ const getMediaItems = async (
 	token: string,
 	pageToken?: string,
 	albumId?: string
-): Promise<{ mediaItems: GoogleMediaItem[]; nextPageToken?: string }> => {
+): Promise<{ mediaItems: Pick<GoogleMediaItem, 'id'>[]; nextPageToken?: string }> => {
 	const url = new URL('https://photoslibrary.googleapis.com/v1/mediaItems');
 	url.searchParams.append('pageSize', '100');
+	url.searchParams.append('fields', 'mediaItems(id),nextPageToken');
 	if (pageToken) url.searchParams.append('pageToken', pageToken);
 	if (albumId) url.searchParams.append('albumId', albumId);
-	return (await fetch(url.href, { headers: { Authorization: `Bearer ${token}` } })).json();
+	const res = await fetch(url.href, { headers: { Authorization: `Bearer ${token}` } });
+	if (!res.ok) {
+		if (res.status === 401) logout(false);
+		throw new Error(await res.text());
+	}
+	return res.json();
 };
 
 const getAlbums = async (
 	token: string,
 	pageToken?: string
 ): Promise<{ albums: GoogleAlbum[]; nextPageToken?: string }> => {
-	return (
-		await fetch(`https://photoslibrary.googleapis.com/v1/albums${pageToken ? `?pageToken=${pageToken}` : ''}`, {
-			headers: { Authorization: `Bearer ${token}` }
-		})
-	).json();
+	const res = await fetch(
+		`https://photoslibrary.googleapis.com/v1/albums${pageToken ? `?pageToken=${pageToken}` : ''}`,
+		{ headers: { Authorization: `Bearer ${token}` } }
+	);
+	if (!res.ok) {
+		if (res.status === 401) logout(false);
+		throw new Error(await res.text());
+	}
+	return res.json();
 };
 
 const getMediaItem = async (token: string, id: string): Promise<GoogleMediaItem> => {
-	return (
-		await fetch(`https://photoslibrary.googleapis.com/v1/mediaItems/${id}`, {
-			headers: { Authorization: `Bearer ${token}` }
-		})
-	).json();
+	const res = await fetch(`https://photoslibrary.googleapis.com/v1/mediaItems/${id}`, {
+		headers: { Authorization: `Bearer ${token}` }
+	});
+	if (!res.ok) {
+		if (res.status === 401) logout(false);
+		throw new Error(await res.text());
+	}
+	return res.json();
 };
 
 /** bulk add new media to library */
@@ -83,33 +96,40 @@ export const updateMedia = async (auth: AuthState) => {
 
 		let allOldItems = true;
 		for (const item of mediaItems) {
-			const entry = await db.mediaItems.get({ id: item.id });
-			if (!entry) {
+			const entry = await db.mediaItems.get({ user: auth.id, id: item.id });
+			if (entry === undefined) {
 				toAdd.push({ user: auth.id, id: item.id, seen: 0 });
 				allOldItems = false;
 			}
 		}
 		console.log(allOldItems, toAdd, mediaItems);
 		if (allOldItems) break; // no new items to add
-		debugger;
+		// debugger;
 	} while (pageToken !== undefined);
+	console.log('adding', toAdd);
 
 	toAdd.reverse();
-	await db.mediaItems.bulkAdd(toAdd);
+
+	let failedCount = 0;
+	await db.mediaItems.bulkAdd(toAdd).catch('BulkError', (err: BulkError) => {
+		failedCount = err.failures.length;
+	});
+
+	return { added: toAdd.length - failedCount, total: toAdd.length };
 };
 
 /** get a random cached media item */
-export const getRandomMediaItem = async (auth: AuthState, handleSeen = true): Promise<GoogleMediaItem | undefined> => {
+export const getRandomMediaItem = async (auth: AuthState, markSeen = true): Promise<GoogleMediaItem | undefined> => {
 	if (!auth.id || !auth.token) throw new Error('missing auth info');
 
-	const items = db.mediaItems.where({ user: auth.id, seen: 0 });
+	const items = db.mediaItems.where({ user: auth.id, seen: DbMediaItemSeen.False });
 
-	const count = await db.mediaItems.where({ user: auth.id, seen: 0 }).count();
+	const count = await db.mediaItems.where({ user: auth.id, seen: DbMediaItemSeen.False }).count();
 	if (count === 0) {
 		// unmark all seen items, starting fresh
-		const total = await db.mediaItems.where({ user: auth.id }).count();
+		const total = await db.mediaItems.where({ user: auth.id, seen: DbMediaItemSeen.True }).count();
 		if (total > 0) {
-			await db.mediaItems.where({ user: auth.id }).modify({ seen: 0 });
+			await db.mediaItems.where({ user: auth.id, seen: 1 }).modify({ seen: DbMediaItemSeen.False });
 			return getRandomMediaItem(auth);
 		}
 		return undefined;
@@ -121,6 +141,8 @@ export const getRandomMediaItem = async (auth: AuthState, handleSeen = true): Pr
 	if (!randomItem) throw new Error('failed to get random item');
 
 	const mediaItem = await getMediaItem(auth.token, randomItem.id);
+
+	if (markSeen) await db.mediaItems.where({ user: auth.id, id: randomItem.id }).modify({ seen: DbMediaItemSeen.True });
 
 	return mediaItem;
 };

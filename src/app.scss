@@ -1,88 +1,42 @@
-:root {
-	font-family: 'Figtree', sans-serif;
-	line-height: 1.5;
-	font-weight: 400;
-
-	color-scheme: dark;
-
-	color: #eee;
-	background-color: #000;
-
-	--bg: #000;
-	--card: #111;
-	--button: #1a1a1a;
-
-	--blue: #2962ff;
-	--blue-text: white;
-	--red: #B71C1C;
-	--red-text: white;
-	--yellow: #fc0;
-	--yellow-text: black;
-	--green: #09AF00;
-	--green-text: #111;
-
-	--gap: 0.5em;
+body {
+	--m3-font: Figtree, system-ui, sans-serif;
+	background-color: rgb(var(--m3-scheme-background));
+	color: rgb(var(--m3-scheme-on-background));
 }
 
 html {
-	margin: 0;
-	display: flex;
-	min-width: 320px;
 	min-height: 100vh;
 	word-break: break-all; // prevent weird overflow for long things
 }
 
 body {
-	margin: 0 auto;
+	margin: 0;
 	padding: min(2%, 1em);
-	text-align: center;
-	width: 100%;
 }
 
-h1, h2, h3, p {
+h1, h2, h3, p, dl, dt, dd {
 	margin: 0;
 }
 
 #app {
 	display: grid;
-	gap: var(--gap);
+	gap: 0.5rem;
 }
 
-.horizPanel {
+.vertical {
 	display: flex;
-	gap: var(--gap);
-	flex-wrap: wrap;
-	justify-content: center;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.5rem;
 }
 
-button {
-	border-radius: var(--gap); // 8px;
-	border: none;
-	padding: 0.5em 1.1em;
-	font-size: 1em;
-	font-weight: 500;
-	font-family: inherit;
-	background-color: var(--button);
-	cursor: pointer;
-}
-button:disabled {
-	filter: contrast(0.9);
-	opacity: 0.8;
-	cursor: not-allowed;
-}
-button:hover {
-	filter: brightness(1.1) contrast(0.95);
+label:has(.m3-container) {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
 }
 
-button.active {
-	background-color: var(--blue);
-	color: var(--blue-text);
-}
-button.warning {
-	background-color: var(--yellow);
-	color: var(--yellow-text);
-}
-button.danger {
-	background-color: var(--red);
-	color: var(--red-text);
+hr {
+	width: 50%;
+	border-color: rgba(var(--m3-scheme-primary) / 25%);
 }
