@@ -44,28 +44,52 @@ const SCOPES = [
 	'https://www.googleapis.com/auth/photoslibrary.readonly'
 ];
 export const login = googleProvider.useGoogleLogin({
-	flow: 'implicit',
+	flow: 'auth-code',
 	overrideScope: true,
 	scope: SCOPES.join(' '),
-	onSuccess: async (tokenResponse) => {
-		if (!hasGrantedAllScopesGoogle(tokenResponse, 'openid', ...SCOPES)) {
+	state: location.origin,
+	// on other origins, we need to redirect to the proper one
+	ux_mode: import.meta.env.VITE_GOOGLE_REDIRECT_ORIGIN === location.origin ? 'popup' : 'redirect',
+	redirect_uri: `${import.meta.env.VITE_GOOGLE_REDIRECT_ORIGIN || ''}/api/auth/callback`,
+	onSuccess: async (codeResponse) => {
+		console.log('codeResponse', codeResponse);
+
+		const scope = codeResponse.scope.split(' ');
+		if (!SCOPES.every((s) => scope.includes(s))) {
 			authState.set({ state: 'error', message: 'missing required scopes' });
-		} else if (!tokenResponse.access_token) {
-			authState.set({ state: 'error', message: 'missing token' });
-		} else {
-			try {
-				const userinfo = await getUserInfo(tokenResponse.access_token);
-				authState.set({
-					state: 'success',
-					token: tokenResponse.access_token,
-					// authuser: tokenResponse.authuser,
-					...userinfo
-				});
-				localStorage.setItem('token', tokenResponse.access_token);
-				console.log(tokenResponse);
-			} catch (err) {
-				authState.set({ state: 'error', message: (err as Error)?.message });
+			return;
+		}
+
+		try {
+			const callbackEndpoint = new URL('/api/auth/callback', location.toString());
+			callbackEndpoint.searchParams.set('popup', '');
+			callbackEndpoint.searchParams.set('state', codeResponse.state || '');
+			callbackEndpoint.searchParams.set('code', codeResponse.code);
+
+			const response = await fetch(callbackEndpoint.toString(), {
+				method: 'GET'
+			});
+			const data = (await response.json()) as {
+				access_token?: string; // for direct use
+			};
+
+			if (!data.access_token) {
+				authState.set({ state: 'error', message: 'missing token' });
+			} else {
+				try {
+					const userinfo = await getUserInfo(data.access_token);
+					authState.set({
+						state: 'success',
+						token: data.access_token,
+						// authuser: codeResponse.authuser,
+						...userinfo
+					});
+				} catch (err) {
+					authState.set({ state: 'error', message: (err as Error)?.message });
+				}
 			}
+		} catch (err) {
+			console.error(err);
 		}
 	},
 	onError: (err) => {
@@ -73,37 +97,40 @@ export const login = googleProvider.useGoogleLogin({
 	}
 });
 
-// check token
-(async () => {
-	const lsToken = localStorage.getItem('token');
-	if (lsToken) {
-		// const res = await (
-		// 	await fetch('https://oauth2.googleapis.com/tokeninfo', {
-		// 		headers: { Authorization: `Bearer ${lsToken}` }
-		// 	})
-		// )?.json();
-		// const scopes = res?.scope?.split(' ');
-		// if (scopes && SCOPES.every((scope) => scopes.includes(scope))) {
-		// 	authState.set({ state: 'success', token: lsToken });
-		// 	return;
-		// }
-		try {
-			const userinfo = await getUserInfo(lsToken);
-			authState.set({ state: 'success', token: lsToken, ...userinfo });
-			return;
-		} catch (err) {
-			console.error(err);
-		}
-		localStorage.removeItem('token');
-	}
-	authState.set({ state: 'none' });
-})();
-
 export const logout = (full = true) => {
 	if (full) googleLogout();
-	localStorage.removeItem('token'); // forget token (though it will still be valid until it expires)
-	// can't seem to find a way to revoke the token without messing up scopes for next login
+	document.cookie = 'access_token=; Path=/; Max-Age=0';
 	authState.set({ state: 'none' });
 };
+
+export const refreshToken = async () => {
+	authState.set({ state: 'loading' });
+	const res = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'same-origin' });
+	const data = await res.json();
+	if (!res.ok || !data.access_token) {
+		logout();
+	} else {
+		const userinfo = await getUserInfo(data.access_token);
+		authState.set({ state: 'success', token: data.access_token, ...userinfo });
+	}
+};
+
+// https://stackoverflow.com/a/25490531
+const getCookie = (header: string, name: string) => header.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || '';
+
+// check token
+(async () => {
+	const accessToken = getCookie(document.cookie, 'access_token');
+	if (accessToken) {
+		try {
+			const userinfo = await getUserInfo(accessToken);
+			authState.set({ state: 'success', token: accessToken, ...userinfo });
+		} catch (err) {
+			await refreshToken();
+		}
+	} else {
+		authState.set({ state: 'none' });
+	}
+})();
 
 authState.subscribe((state) => console.log('authState', state));

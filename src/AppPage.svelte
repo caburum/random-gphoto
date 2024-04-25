@@ -26,6 +26,7 @@
 		$currentRandomMediaItemPromise.then((item) => {
 			console.log('currentRandomMediaItem', item);
 			if ($authState.id && item) seenWritable = createSeenWritable($authState.id, item.id);
+			if (!item) loading = false;
 		});
 	}
 </script>
@@ -39,7 +40,7 @@
 			><Icon icon={iconDice} /> get random media item</Button
 		>
 	</div>
-	{#if $currentRandomMediaItemPromise}<CircularProgressIndeterminate display={loading ? 'inline-flex' : 'none'} />{/if}
+	<CircularProgressIndeterminate display={loading ? 'inline-flex' : 'none'} />
 	{#await $currentRandomMediaItemPromise then item}
 		{#if item}
 			<a href={`${item.productUrl}?authuser=${$authState.email}`} target="_blank" rel="noopener">

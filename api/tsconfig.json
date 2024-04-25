@@ -1,0 +1,12 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "ESNext",
+		"strict": true,
+		"esModuleInterop": true,
+		"lib": ["dom", "dom.iterable", "esnext"],
+		"types": ["@edge-runtime/types"],
+		"moduleResolution": "node"
+	},
+	"include": ["../api/**/*.ts"]
+}

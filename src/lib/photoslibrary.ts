@@ -1,5 +1,5 @@
 import { type BulkError } from 'dexie';
-import { logout, type AuthState } from './auth';
+import { refreshToken, type AuthState } from './auth';
 import { DbMediaItemSeen, db, type DbMediaItem } from './db';
 
 export interface GoogleMediaItem {
@@ -51,7 +51,7 @@ const getMediaItems = async (
 	if (albumId) url.searchParams.append('albumId', albumId);
 	const res = await fetch(url.href, { headers: { Authorization: `Bearer ${token}` } });
 	if (!res.ok) {
-		if (res.status === 401) logout(false);
+		if (res.status === 401) throw await refreshToken();
 		throw new Error(await res.text());
 	}
 	return res.json();
@@ -66,7 +66,7 @@ const getAlbums = async (
 		{ headers: { Authorization: `Bearer ${token}` } }
 	);
 	if (!res.ok) {
-		if (res.status === 401) logout(false);
+		if (res.status === 401) throw await refreshToken();
 		throw new Error(await res.text());
 	}
 	return res.json();
@@ -77,7 +77,7 @@ const getMediaItem = async (token: string, id: string): Promise<GoogleMediaItem>
 		headers: { Authorization: `Bearer ${token}` }
 	});
 	if (!res.ok) {
-		if (res.status === 401) logout(false);
+		if (res.status === 401) throw await refreshToken();
 		throw new Error(await res.text());
 	}
 	return res.json();
