@@ -6,6 +6,9 @@ declare var process: {
 		VITE_GOOGLE_CLIENT_ID: string;
 		GOOGLE_CLIENT_SECRET: string;
 		VITE_GOOGLE_REDIRECT_ORIGIN?: string;
+		VERCEL?: string;
+		VERCEL_ENV?: string;
+		ALLOWED_ORIGIN_REGEX?: string; // example: "random-gphoto(-[\w-]+-caburums-projects)?\.vercel\.app"
 	};
 };
 
@@ -58,6 +61,22 @@ app.get('/api/auth/callback', async (c: Context) => {
 	// since cookies need to be set, we need to redirect there first before the app
 	const targetOrigin = new URL(url.searchParams.get('state') || url.origin);
 	const doRedirect = targetOrigin.origin !== url.origin;
+
+	// prevent running redirect code from random domains
+	// since this route generates user tokens using the client secret
+	if (
+		doRedirect &&
+		process.env.VERCEL &&
+		!(
+			process.env.VERCEL_ENV === 'development' ||
+			(process.env.ALLOWED_ORIGIN_REGEX &&
+				new RegExp(`^https:\/\/${process.env.ALLOWED_ORIGIN_REGEX.replaceAll('\\\\', '\\')}$`).test(
+					targetOrigin.origin
+				))
+		)
+	) {
+		return c.json({ error: `unauthorized redirect origin: "${targetOrigin.origin}"` }, 401);
+	}
 
 	try {
 		const tokenEndpoint = new URL('https://accounts.google.com/o/oauth2/token');
@@ -120,7 +139,7 @@ app.get('/api/auth/callback2', async (c: Context) => {
 	const refresh_token = url.searchParams.get('refresh_token');
 	if (!access_token || !refresh_token) return c.json({ error: 'missing tokens' }, 401);
 
-	// todo: verify that tokens are real? maybe something malicious could happen here
+	// could verify that the tokens are valid here, but worst case is that the user has to login again & it doesn't seem like a security risk
 
 	const response = new Response(null, {
 		status: 302,
