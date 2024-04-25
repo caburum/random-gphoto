@@ -1,5 +1,4 @@
-import { GoogleOAuthProvider, googleLogout, hasGrantedAllScopesGoogle } from 'google-oauth-gsi';
-import { onMount } from 'svelte';
+import { GoogleOAuthProvider, googleLogout } from 'google-oauth-gsi';
 import { writable, type Writable } from 'svelte/store';
 
 export interface AuthState {

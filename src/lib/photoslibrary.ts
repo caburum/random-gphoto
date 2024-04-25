@@ -87,7 +87,7 @@ const getMediaItem = async (token: string, id: string): Promise<GoogleMediaItem>
 export const updateMedia = async (auth: AuthState) => {
 	if (!auth.id || !auth.token) throw new Error('missing auth info');
 
-	let toAdd: DbMediaItem[] = [];
+	const toAdd: DbMediaItem[] = [];
 
 	let pageToken: string | undefined = '';
 	do {

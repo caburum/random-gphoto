@@ -1,7 +1,7 @@
 import { Context, Hono } from 'hono';
 import { handle } from 'hono/vercel';
 
-declare var process: {
+declare const process: {
 	env: {
 		VITE_GOOGLE_CLIENT_ID: string;
 		GOOGLE_CLIENT_SECRET: string;
@@ -70,9 +70,7 @@ app.get('/api/auth/callback', async (c: Context) => {
 		!(
 			process.env.VERCEL_ENV === 'development' ||
 			(process.env.ALLOWED_ORIGIN_REGEX &&
-				new RegExp(`^https:\/\/${process.env.ALLOWED_ORIGIN_REGEX.replaceAll('\\\\', '\\')}$`).test(
-					targetOrigin.origin
-				))
+				new RegExp(`^https://${process.env.ALLOWED_ORIGIN_REGEX.replaceAll('\\\\', '\\')}$`).test(targetOrigin.origin))
 		)
 	) {
 		return c.json({ error: `unauthorized redirect origin: "${targetOrigin.origin}"` }, 401);
@@ -208,7 +206,7 @@ app.post('/api/auth/refresh', async (c: Context) => {
 	}
 });
 
-app.post('/api/auth/logout', async (c: Context) => {
+app.post('/api/auth/logout', async () => {
 	const response = new Response(null, {
 		status: 204,
 		headers: {}
