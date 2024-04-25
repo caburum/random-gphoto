@@ -23,7 +23,7 @@
 				disabled={$authState.state !== 'success'}>{route}</Button
 			>
 		{/each}
-		<Button type="outlined" on:click={() => logout(true)} disabled={$authState.state !== 'success'}>logout</Button>
+		<Button type="outlined" on:click={() => logout()} disabled={$authState.state !== 'success'}>logout</Button>
 	</nav>
 </header>
 

@@ -97,9 +97,11 @@ export const login = googleProvider.useGoogleLogin({
 	}
 });
 
-export const logout = (full = true) => {
-	if (full) googleLogout();
+export const logout = async () => {
+	authState.set({ state: 'loading' });
+	googleLogout();
 	document.cookie = 'access_token=; Path=/; Max-Age=0';
+	await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' }); // refresh_token can only be cleared by the server
 	authState.set({ state: 'none' });
 };
 

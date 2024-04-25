@@ -152,6 +152,12 @@ app.get('/api/auth/callback2', async (c: Context) => {
 	return response;
 });
 
+const logout = (headers: Headers) => {
+	const exp = '=deleted; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+	headers.append('Set-Cookie', 'access_token' + exp);
+	headers.append('Set-Cookie', 'refresh_token' + exp);
+};
+
 app.post('/api/auth/refresh', async (c: Context) => {
 	const cookie = c.req.header('Cookie');
 	if (!cookie) return c.json('no cookie', 401);
@@ -194,9 +200,7 @@ app.post('/api/auth/refresh', async (c: Context) => {
 				status: 401,
 				headers: {}
 			});
-			const exp = '=deleted; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-			response.headers.append('Set-Cookie', 'access_token' + exp);
-			response.headers.append('Set-Cookie', 'refresh_token' + exp);
+			logout(response.headers);
 			return response;
 		}
 	} catch (error) {
@@ -204,8 +208,21 @@ app.post('/api/auth/refresh', async (c: Context) => {
 	}
 });
 
+app.post('/api/auth/logout', async (c: Context) => {
+	const response = new Response(null, {
+		status: 204,
+		headers: {}
+	});
+	logout(response.headers);
+	return response;
+});
+
 app.get('/api/auth', async (c: Context) => {
-	return new Response();
+	const cookie = c.req.header('Cookie');
+	return c.json({
+		access_token: !!(cookie && getCookie(cookie, 'access_token')),
+		refresh_token: !!(cookie && getCookie(cookie, 'refresh_token'))
+	});
 });
 
 export default app;
