@@ -5,9 +5,9 @@
 	"author": "Calum Dingwall (https://github.com/caburum)",
 	"type": "module",
 	"scripts": {
-		"vercel-dev": "npx vercel dev",
+		"vdev": "npx vercel dev",
 		"dev": "vite",
-		"vercel-build": "npx vercel build",
+		"vbuild": "npx vercel build",
 		"build": "vite build",
 		"preview": "vite preview",
 		"check": "svelte-check --tsconfig ./tsconfig.json",

@@ -157,6 +157,7 @@
 					on:click={async () => console.log(await db.mediaItems.get({ user: $authState.id, id: item.id }))}
 					>get item</Button
 				> -->
+				<!-- todo: add copy original to clipboard/share button -->
 				{#if seenWritable}
 					<label>
 						<CheckboxAnim>

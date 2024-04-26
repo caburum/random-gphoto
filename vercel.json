@@ -1,9 +1,11 @@
 {
+	"$schema": "https://openapi.vercel.sh/vercel.json",
 	"rewrites": [
 		{
 			"source": "/api/auth/(.*)",
 			"destination": "/api/auth"
 		}
 	],
-	"devCommand": "vite --port $PORT --host"
+	"devCommand": "vite --port $PORT --host",
+	"buildCommand": "vite build"
 }

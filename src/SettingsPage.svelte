@@ -9,10 +9,10 @@
 		style: 'background-color: rgb(var(--m3-scheme-error-container)); --text: var(--m3-scheme-on-error-container);'
 	};
 
-	let neverShownAgain = liveQuery(() =>
+	let mediaCount = liveQuery(() => db.mediaItems.where({ user: $authState.id }).count());
+	let neverShownAgainCount = liveQuery(() =>
 		db.mediaItems.where({ user: $authState.id, seen: DbMediaItemSeen.NeverShowAgain }).count()
 	);
-
 	let updateMediaCount: string | undefined;
 </script>
 
@@ -27,11 +27,11 @@
 <hr />
 
 <h2>albums</h2>
-<!-- todo -->
+<!-- todo: -->
 
 <hr />
 
-<h2>media</h2>
+<h2>media ({$mediaCount})</h2>
 <Button
 	type="filled"
 	on:click={async () => {
@@ -48,7 +48,7 @@
 		$authState.id &&
 		db.mediaItems
 			.where({ user: $authState.id, seen: DbMediaItemSeen.NeverShowAgain })
-			.modify({ seen: DbMediaItemSeen.True })}>clear never shown again ({$neverShownAgain})</Button
+			.modify({ seen: DbMediaItemSeen.True })}>clear never shown again ({$neverShownAgainCount})</Button
 >
 
 <!-- todo: compression setings -->
