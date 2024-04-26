@@ -5,10 +5,11 @@
 	"author": "Calum Dingwall (https://github.com/caburum)",
 	"type": "module",
 	"scripts": {
-		"dev": "vercel dev",
-		"vdev": "vite",
-		"vbuild": "vite build",
-		"vpreview": "vite preview",
+		"vercel-dev": "npx vercel dev",
+		"dev": "vite",
+		"vercel-build": "npx vercel build",
+		"build": "vite build",
+		"preview": "vite preview",
 		"check": "svelte-check --tsconfig ./tsconfig.json",
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write ."
