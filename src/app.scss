@@ -30,6 +30,10 @@ h1, h2, h3, p, dl, dt, dd {
 	gap: 0.5rem;
 }
 
+.center {
+	text-align: center;
+}
+
 label:has(.m3-container) {
 	display: flex;
 	align-items: center;

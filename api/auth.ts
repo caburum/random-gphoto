@@ -158,12 +158,10 @@ const logout = (headers: Headers) => {
 
 app.post('/api/auth/refresh', async (c: Context) => {
 	const cookie = c.req.header('Cookie');
-	if (!cookie) return c.json('no cookie', 401);
+	if (!cookie) return c.json({ error: 'no cookie' }, 401);
 
 	const refreshToken = getCookie(cookie, 'refresh_token');
-	if (!refreshToken) return c.json('no refresh_token', 401);
-
-	console.log('refreshToken', refreshToken);
+	if (!refreshToken) return c.json({ error: 'no refresh_token' }, 401);
 
 	try {
 		const tokenEndpoint = new URL('https://oauth2.googleapis.com/token');
@@ -177,7 +175,11 @@ app.post('/api/auth/refresh', async (c: Context) => {
 			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 			body: tokenEndpoint.searchParams.toString()
 		});
-		const tokenData = (await tokenResponse.json()) as { access_token?: string };
+		const tokenData = (await tokenResponse.json()) as {
+			access_token?: string;
+			error?: string;
+			error_description?: string;
+		};
 		console.log('tokenData', tokenData);
 
 		if (tokenData.access_token) {
@@ -194,15 +196,20 @@ app.post('/api/auth/refresh', async (c: Context) => {
 				}
 			);
 		} else {
-			const response = new Response(null, {
-				status: 401,
-				headers: {}
-			});
+			const response = new Response(
+				JSON.stringify({
+					error: tokenData.error_description || 'refresh failed'
+				}),
+				{
+					status: 401,
+					headers: { 'Content-Type': 'application/json' }
+				}
+			);
 			logout(response.headers);
 			return response;
 		}
 	} catch (error) {
-		return c.json('callback failed', 500);
+		return c.json({ error: 'callback failed' }, 500);
 	}
 });
 

@@ -13,6 +13,7 @@ export interface AuthState {
 export const authState: Writable<AuthState> = writable({
 	state: 'loading'
 });
+// todo: show snackbar with user info on login
 
 export const googleProvider = new GoogleOAuthProvider({
 	clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
@@ -106,6 +107,7 @@ export const logout = async () => {
 
 export const refreshToken = async () => {
 	authState.set({ state: 'loading' });
+	// todo: show snackbar while refreshing
 	const res = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'same-origin' });
 	const data = await res.json();
 	if (!res.ok || !data.access_token) {

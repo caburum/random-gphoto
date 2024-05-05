@@ -142,6 +142,8 @@ export const getRandomMediaItem = async (auth: AuthState, markSeen = true): Prom
 
 	const mediaItem = await getMediaItem(auth.token, randomItem.id);
 
+	// todo: handle deleted/archived image (remove from db)
+
 	if (markSeen) await db.mediaItems.where({ user: auth.id, id: randomItem.id }).modify({ seen: DbMediaItemSeen.True });
 
 	return mediaItem;

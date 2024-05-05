@@ -31,7 +31,13 @@
 
 <hr />
 
-<h2>media ({$mediaCount})</h2>
+<h2>
+	media{#if $mediaCount !== undefined}&nbsp;({$mediaCount}){/if}
+</h2>
+<p class="center">
+	note: only media added since the previous update will be included,<br />
+	and any media archived since the previous update will remain until randomly selected
+</p>
 <Button
 	type="filled"
 	on:click={async () => {
@@ -48,7 +54,8 @@
 		$authState.id &&
 		db.mediaItems
 			.where({ user: $authState.id, seen: DbMediaItemSeen.NeverShowAgain })
-			.modify({ seen: DbMediaItemSeen.True })}>clear never shown again ({$neverShownAgainCount})</Button
+			.modify({ seen: DbMediaItemSeen.True })}
+	>clear never shown again{#if $neverShownAgainCount !== undefined}&nbsp;({$neverShownAgainCount}){/if}</Button
 >
 
 <!-- todo: compression setings -->

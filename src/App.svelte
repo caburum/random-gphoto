@@ -14,6 +14,7 @@
 />
 
 <header>
+	<!-- todo: create icon & favicon -->
 	<h1>random-gphoto</h1>
 	<nav>
 		{#each routeNames as route}
