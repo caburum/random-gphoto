@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { authState, login, logout } from './lib/auth';
 	import { routes, currentPage } from './lib/routing';
-	import { StyleFromScheme, Button, CircularProgressIndeterminate } from 'm3-svelte';
+	import { StyleFromScheme, Button, CircularProgressIndeterminate, SnackbarAnim } from 'm3-svelte';
+	import { snackbar } from './lib/stores';
 
 	const routeNames = Object.keys(routes) as Array<keyof typeof routes>;
 </script>
@@ -42,6 +43,8 @@
 		{/if}
 	{/if}
 </main>
+
+<SnackbarAnim bind:show={$snackbar} />
 
 <style lang="scss">
 	header {

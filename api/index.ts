@@ -230,6 +230,31 @@ app.get('/api/auth', async (c: Context) => {
 	});
 });
 
+app.get('/api/proxy', async (c: Context) => {
+	const cookie = c.req.header('Cookie');
+	const accessToken = cookie && getCookie(cookie, 'access_token');
+	if (!accessToken) return c.json({ error: 'no access_token' }, 401);
+
+	const url = new URL(c.req.url);
+
+	let target;
+	try {
+		target = new URL(url.searchParams.get('url') || '');
+	} catch (e) {
+		return c.json({ error: 'invalid url' }, 400);
+	}
+	if (!target || target.hostname !== 'lh3.googleusercontent.com') return c.json({ error: 'invalid target' }, 400);
+
+	const response = await fetch(target.toString());
+
+	return new Response(response.body, {
+		status: response.status,
+		headers: {
+			'Content-Type': response.headers.get('Content-Type') || ''
+		}
+	});
+});
+
 export default app;
 
 export const config = {

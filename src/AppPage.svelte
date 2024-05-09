@@ -4,10 +4,12 @@
 	import iconCalendar from '@ktibow/iconset-material-symbols/today';
 	import iconCamera from '@ktibow/iconset-material-symbols/camera-outline';
 	import iconImage from '@ktibow/iconset-material-symbols/image-outline';
+	import iconShare from '@ktibow/iconset-material-symbols/share-outline';
 	import { authState } from './lib/auth';
 	import { getRandomMediaItem } from './lib/photoslibrary';
 	import { currentRandomMediaItemPromise } from './lib/stores';
 	import { DbMediaItemSeen, createSeenWritable } from './lib/db';
+	import { share } from './lib/share';
 
 	function prettyNumber(n: number, decimals: number): string {
 		return Number(n.toFixed(decimals)).toString();
@@ -44,6 +46,7 @@
 	{#await $currentRandomMediaItemPromise then item}
 		{#if item}
 			<a href={`${item.productUrl}?authuser=${$authState.email}`} target="_blank" rel="noopener">
+				<!-- todo: don't push ui off the bottom of the page -->
 				<!-- https://gist.github.com/Sauerstoffdioxid/2a0206da9f44dde1fdfce290f38d2703 for url paramters -->
 				{#if item.mediaMetadata.photo}
 					<img
@@ -51,7 +54,7 @@
 						src={`${item.baseUrl}=w${Math.ceil(window.innerWidth * 1.5)}-h${Math.ceil(window.innerHeight * 1.5)}-rw-v1`}
 						alt={item.filename}
 						style:max-width={`min(100%, ${item.mediaMetadata.width}px)`}
-						style:max-height={`min(100%, ${item.mediaMetadata.height}px)`}
+						style:max-height={`min(80vh, ${item.mediaMetadata.height}px)`}
 						on:load={() => (loading = false)}
 						style:display={loading ? 'none' : null}
 					/>
@@ -157,6 +160,9 @@
 					on:click={async () => console.log(await db.mediaItems.get({ user: $authState.id, id: item.id }))}
 					>get item</Button
 				> -->
+				{#if item.mediaMetadata.photo}
+					<Button type="filled" iconType="left" on:click={() => share(item)}><Icon icon={iconShare} /> share</Button>
+				{/if}
 				<!-- todo: add copy original to clipboard/share button -->
 				{#if seenWritable}
 					<label>
