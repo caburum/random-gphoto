@@ -1,6 +1,7 @@
 import { type BulkError } from 'dexie';
-import { refreshToken, type AuthState } from './auth';
+import { authState, refreshToken, type AuthState } from './auth';
 import { DbMediaItemSeen, db, type DbMediaItem } from './db';
+import { get } from 'svelte/store';
 
 export interface GoogleMediaItem {
 	id: string;
@@ -142,7 +143,8 @@ export const getRandomMediaItem = async (auth: AuthState, markSeen = true): Prom
 
 	const mediaItem = await getMediaItem(auth.token, randomItem.id);
 
-	// todo: handle deleted/archived image (remove from db)
+	// handle deleted/archived image? (remove from db)
+	// no way to tell if an image has been archived since it will still exist, user can manually mark it as hidden
 
 	if (markSeen) await db.mediaItems.where({ user: auth.id, id: randomItem.id }).modify({ seen: DbMediaItemSeen.True });
 

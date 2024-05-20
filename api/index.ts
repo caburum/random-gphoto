@@ -86,7 +86,6 @@ app.get('/api/auth/callback', async (c: Context) => {
 			'redirect_uri',
 			isPopup ? 'postmessage' : `${process.env.VITE_GOOGLE_REDIRECT_ORIGIN || url.origin}/api/auth/callback`
 		);
-		console.log('tokenEndpoint', tokenEndpoint.toString());
 
 		const tokenResponse = await fetch(tokenEndpoint.origin + tokenEndpoint.pathname, {
 			method: 'POST',
@@ -94,9 +93,11 @@ app.get('/api/auth/callback', async (c: Context) => {
 			body: tokenEndpoint.searchParams.toString()
 		});
 		const tokenData = (await tokenResponse.json()) as { access_token?: string; refresh_token?: string };
-		console.log('tokenData', tokenData);
 
-		if (!tokenData.access_token || !tokenData.refresh_token) return c.json({ error: 'missing tokens' }, 401);
+		if (!tokenData.access_token || !tokenData.refresh_token) {
+			console.log('tokenData', tokenData);
+			return c.json({ error: 'missing tokens' }, 401);
+		}
 
 		if (doRedirect) {
 			// set cookies on the target origin
@@ -180,7 +181,6 @@ app.post('/api/auth/refresh', async (c: Context) => {
 			error?: string;
 			error_description?: string;
 		};
-		console.log('tokenData', tokenData);
 
 		if (tokenData.access_token) {
 			return new Response(
@@ -196,6 +196,7 @@ app.post('/api/auth/refresh', async (c: Context) => {
 				}
 			);
 		} else {
+			console.log('tokenData', tokenData);
 			const response = new Response(
 				JSON.stringify({
 					error: tokenData.error_description || 'refresh failed'
