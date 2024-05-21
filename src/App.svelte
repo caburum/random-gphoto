@@ -2,7 +2,7 @@
 	import { authState, login, logout } from './lib/auth';
 	import { routes, currentPage } from './lib/routing';
 	import { snackbar } from './lib/stores';
-	import { StyleFromScheme, Button, CircularProgressIndeterminate, SnackbarAnim } from 'm3-svelte';
+	import { StyleFromScheme, Button, CircularProgressIndeterminate, Snackbar } from 'm3-svelte';
 
 	const navRouteNames = (Object.keys(routes) as Array<keyof typeof routes>).filter((r) => !routes[r].hidden);
 </script>
@@ -56,7 +56,7 @@
 	{/if}
 </main>
 
-<SnackbarAnim bind:show={$snackbar} />
+<Snackbar bind:show={$snackbar} />
 
 <style lang="scss">
 	header {

@@ -5,13 +5,12 @@
 	import { updateMedia } from './lib/photoslibrary';
 	import { liveQuery } from 'dexie';
 	import { shareForceClipboard } from './lib/share';
-	import { snackbar } from './lib/stores';
+	import { mediaCount, snackbar } from './lib/stores';
 
 	const dangerStyle = {
 		style: 'background-color: rgb(var(--m3-scheme-error-container)); --text: var(--m3-scheme-on-error-container);'
 	};
 
-	let mediaCount = liveQuery(() => db.mediaItems.where({ user: $authState.id }).count());
 	let neverShownAgainCount = liveQuery(() =>
 		db.mediaItems.where({ user: $authState.id, seen: DbMediaItemSeen.NeverShowAgain }).count()
 	);

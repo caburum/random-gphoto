@@ -1,6 +1,7 @@
 import { type BulkError } from 'dexie';
-import { authState, refreshToken, type AuthState } from './auth';
+import { refreshToken, type AuthState } from './auth';
 import { DbMediaItemSeen, db, type DbMediaItem } from './db';
+import { snackbar } from './stores';
 import { get } from 'svelte/store';
 
 export interface GoogleMediaItem {
@@ -88,6 +89,8 @@ const getMediaItem = async (token: string, id: string): Promise<GoogleMediaItem>
 export const updateMedia = async (auth: AuthState) => {
 	if (!auth.id || !auth.token) throw new Error('missing auth info');
 
+	const sb = get(snackbar);
+
 	const toAdd: DbMediaItem[] = [];
 
 	let pageToken: string | undefined = '';
@@ -105,6 +108,7 @@ export const updateMedia = async (auth: AuthState) => {
 		}
 		console.log(allOldItems, toAdd, mediaItems);
 		if (allOldItems) break; // no new items to add
+		sb?.({ message: `currently found ${toAdd.length} new media items` });
 		// debugger;
 	} while (pageToken !== undefined);
 	console.log('adding', toAdd);
